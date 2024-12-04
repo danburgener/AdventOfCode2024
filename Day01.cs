@@ -10,7 +10,7 @@ namespace AdventOfCode2024
             leftList.Sort();
             rightList.Sort();
             int currentDistance = 0;
-            for(int i = 0; i < leftList.Count; i++)
+            for (int i = 0; i < leftList.Count; i++)
             {
 
                 currentDistance += Math.Abs(leftList[i] - rightList[i]);
@@ -23,7 +23,7 @@ namespace AdventOfCode2024
             var data = await Common.ReadFile("One", "Two");
             var (leftList, rightList) = GetLists(data);
             int similarity = 0;
-            foreach(var leftValue in leftList)
+            foreach (var leftValue in leftList)
             {
                 var count = rightList.Count(r => r == leftValue);
                 similarity += (leftValue * count);

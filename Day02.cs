@@ -8,7 +8,7 @@ namespace AdventOfCode2024
             var data = await Common.ReadFile("Two", "One");
             int safeReports = 0;
 
-            foreach(var line in data)
+            foreach (var line in data)
             {
                 var levels = line.Split(' ').Select(l => int.Parse(l)).ToArray();
                 if (ReportIsSafe(levels))
