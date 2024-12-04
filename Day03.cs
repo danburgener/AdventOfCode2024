@@ -10,9 +10,10 @@ namespace AdventOfCode2024
             var data = await Common.ReadFile("Three", "One");
             string pattern = @"mul\((\d{1,3}),(\d{1,3})\)";
             var regex = new System.Text.RegularExpressions.Regex(pattern);
-            MatchCollection matches = regex.Matches(string.Join(' ',data));
+            MatchCollection matches = regex.Matches(string.Join(' ', data));
             int total = 0;
-            foreach ( Match match in matches ) {
+            foreach (Match match in matches)
+            {
                 total += (int.Parse(match.Groups[1].Value) * int.Parse(match.Groups[2].Value));
             }
 
@@ -47,7 +48,6 @@ namespace AdventOfCode2024
             }
 
             return total;
-            return 0;
         }
     }
 }
