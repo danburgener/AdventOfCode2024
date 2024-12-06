@@ -1,19 +1,15 @@
-﻿
-
-namespace AdventOfCode2024
+﻿namespace AdventOfCode2024
 {
     public static class Day05
     {
         public static async Task<long> One()
         {
             var data = await Common.ReadFile("Five", "One");
-            Dictionary<int, List<int>> pageOrderingRules;
-            List<List<int>> pagesToProduce;
-            ParseData(data, out pageOrderingRules, out pagesToProduce);
+            ParseData(data, out Dictionary<int, List<int>> pageOrderingRules, out List<List<int>> pagesToProduce);
             int count = 0;
             foreach (var pageToProduce in pagesToProduce)
             {
-                if (InCorrectOrder(pageToProduce, pageOrderingRules))
+                if (IsOrderCorrect(pageToProduce, pageOrderingRules))
                 {
                     count += pageToProduce[pageToProduce.Count / 2];
                 }
@@ -24,13 +20,11 @@ namespace AdventOfCode2024
         public static async Task<long> Two()
         {
             var data = await Common.ReadFile("Five", "Two");
-            Dictionary<int, List<int>> pageOrderingRules;
-            List<List<int>> pagesToProduce;
-            ParseData(data, out pageOrderingRules, out pagesToProduce);
+            ParseData(data, out Dictionary<int, List<int>> pageOrderingRules, out List<List<int>> pagesToProduce);
             int count = 0;
             foreach (var pageToProduce in pagesToProduce)
             {
-                if (!InCorrectOrder(pageToProduce, pageOrderingRules))
+                if (!IsOrderCorrect(pageToProduce, pageOrderingRules))
                 {
                     List<int> fixedOrder = FixedOrder(pageToProduce.ToList(), pageOrderingRules);
                     count += fixedOrder[fixedOrder.Count / 2];
@@ -39,56 +33,27 @@ namespace AdventOfCode2024
             return count;
         }
 
-        //private static List<int> FixedOrder(List<int> pageToProduce, Dictionary<int, List<int>> pageOrderingRules)
-        //{
-        //    bool inCorrectOrder = false;
-        //    pageToProduce.Sort();
-        //    List<int> distinctNumbers = pageToProduce.Distinct().ToList();
-        //    while (!inCorrectOrder)
-        //    {
-        //        foreach (var distinctNumber in distinctNumbers)
-        //        {
-        //            if (pageOrderingRules.ContainsKey(distinctNumber))
-        //            {
-        //                var rules = pageOrderingRules[distinctNumber];
-        //                foreach (var rule in rules)
-        //                {
-        //                    int lastIndexOfKey = pageToProduce.LastIndexOf(distinctNumber);
-        //                    int removedCount = pageToProduce.RemoveAll(p => p == rule);
-        //                    pageToProduce.InsertRange(lastIndexOfKey, Enumerable.Repeat(rule, removedCount));
-        //                }
-        //            }
-        //        }
-        //        if (InCorrectOrder(pageToProduce, pageOrderingRules))
-        //        {
-        //            return pageToProduce;
-        //        }
-        //    }
-        //    return pageToProduce;
-        //}
-
         private static List<int> FixedOrder(List<int> pageToProduce, Dictionary<int, List<int>> pageOrderingRules)
         {
             bool inCorrectOrder = false;
             int attempts = 0;
-            while (!inCorrectOrder && attempts < 50000)
+            while (!inCorrectOrder && attempts < 1000)
             {
                 attempts++;
-                for (var i = 0; i < pageToProduce.Count; i++)
+                for (var padeToProduceIndex = 0; padeToProduceIndex < pageToProduce.Count; padeToProduceIndex++)
                 {
-                    var page = pageToProduce[i];
+                    var page = pageToProduce[padeToProduceIndex];
                     bool somethingChanged = false;
-                    if (pageOrderingRules.ContainsKey(page))
+                    if (pageOrderingRules.TryGetValue(page, out List<int>? rules))
                     {
-                        var rules = pageOrderingRules[page];
-                        for (var j = 0; j < i; j++)
+                        for (var j = 0; j < padeToProduceIndex; j++)
                         {
                             foreach (var rule in rules)
                             {
                                 if (pageToProduce[j] == rule)
                                 {
                                     pageToProduce.RemoveAt(j);
-                                    pageToProduce.Insert(i, rule);
+                                    pageToProduce.Add(rule);
                                     somethingChanged = true;
                                     break;
                                 }
@@ -104,7 +69,7 @@ namespace AdventOfCode2024
                         break;
                     }
                 }
-                inCorrectOrder = InCorrectOrder(pageToProduce, pageOrderingRules);
+                inCorrectOrder = IsOrderCorrect(pageToProduce, pageOrderingRules);
             }
             return inCorrectOrder ? pageToProduce : throw new Exception();
         }
@@ -143,14 +108,13 @@ namespace AdventOfCode2024
             }
         }
 
-        private static bool InCorrectOrder(List<int> pageToProduce, Dictionary<int, List<int>> pageOrderingRules)
+        private static bool IsOrderCorrect(List<int> pageToProduce, Dictionary<int, List<int>> pageOrderingRules)
         {
             for (var i = 0; i < pageToProduce.Count(); i++)
             {
                 var page = pageToProduce[i];
-                if (pageOrderingRules.ContainsKey(page))
+                if (pageOrderingRules.TryGetValue(page, out List<int>? rules))
                 {
-                    var rules = pageOrderingRules[page];
                     for (var j = 0; j < i; j++)
                     {
                         foreach (var rule in rules)
@@ -169,40 +133,5 @@ namespace AdventOfCode2024
             }
             return true;
         }
-
-        static IList<IList<int>> Permute(int[] nums)
-        {
-            var list = new List<IList<int>>();
-            return DoPermute(nums, 0, nums.Length - 1, list);
-        }
-
-        static IList<IList<int>> DoPermute(int[] nums, int start, int end, IList<IList<int>> list)
-        {
-            if (start == end)
-            {
-                // We have one of our possible n! solutions,
-                // add it to the list.
-                list.Add(new List<int>(nums));
-            }
-            else
-            {
-                for (var i = start; i <= end; i++)
-                {
-                    Swap(ref nums[start], ref nums[i]);
-                    DoPermute(nums, start + 1, end, list);
-                    Swap(ref nums[start], ref nums[i]);
-                }
-            }
-
-            return list;
-        }
-
-        static void Swap(ref int a, ref int b)
-        {
-            var temp = a;
-            a = b;
-            b = temp;
-        }
-
     }
 }
