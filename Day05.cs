@@ -2,11 +2,12 @@
 {
     public class Day05 : IDay
     {
+        private readonly string _fileDayName = "Five";
         public string GetName() => "Day 05";
 
         public async Task<long> One()
         {
-            var data = await Common.ReadFile("Five", "One");
+            var data = await Common.ReadFile(_fileDayName, "One");
             ParseData(data, out Dictionary<int, List<int>> pageOrderingRules, out List<List<int>> pagesToProduce);
             int count = 0;
             foreach (var pageToProduce in pagesToProduce)
@@ -21,7 +22,7 @@
 
         public async Task<long> Two()
         {
-            var data = await Common.ReadFile("Five", "Two");
+            var data = await Common.ReadFile(_fileDayName, "Two");
             ParseData(data, out Dictionary<int, List<int>> pageOrderingRules, out List<List<int>> pagesToProduce);
             int count = 0;
             foreach (var pageToProduce in pagesToProduce)

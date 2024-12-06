@@ -2,12 +2,13 @@
 {
     public class Day04 : IDay
     {
+        private readonly string _fileDayName = "Four";
         public string GetName() => "Day 04";
         private static readonly string MAS = "MAS";
         private static readonly string XMAS = "XMAS";
         public async Task<long> One()
         {
-            var data = await Common.ReadFile("Four", "One");
+            var data = await Common.ReadFile(_fileDayName, "One");
             int count = 0;
             for (var rowIndex = 0; rowIndex < data.Length; rowIndex++)
             {
@@ -52,7 +53,7 @@
 
         public async Task<long> Two()
         {
-            var data = await Common.ReadFile("Four", "Two");
+            var data = await Common.ReadFile(_fileDayName, "Two");
             int count = 0;
             List<string> alreadyFound = new();
             for (var rowIndex = 0; rowIndex < data.Length; rowIndex++)

@@ -3,10 +3,11 @@ namespace AdventOfCode2024
 {
     public class Day02 : IDay
     {
+        private readonly string _fileDayName = "Two";
         public string GetName() => "Day 02";
         public async Task<long> One()
         {
-            var data = await Common.ReadFile("Two", "One");
+            var data = await Common.ReadFile(_fileDayName, "One");
             int safeReports = 0;
 
             foreach (var line in data)
@@ -22,7 +23,7 @@ namespace AdventOfCode2024
 
         public async Task<long> Two()
         {
-            var data = await Common.ReadFile("Two", "Two");
+            var data = await Common.ReadFile(_fileDayName, "Two");
             int safeReports = 0;
 
             foreach (var line in data)

@@ -3,14 +3,12 @@ namespace AdventOfCode2024
 {
     public class Day01 : IDay
     {
-        public string GetName()
-        {
-            return "Day 01";
-        }
+        private readonly string _fileDayName = "One";
+        public string GetName() => "Day 01";
 
         public async Task<long> One()
         {
-            var data = await Common.ReadFile("One", "One");
+            var data = await Common.ReadFile(_fileDayName, "One");
             var (leftList, rightList) = GetLists(data);
             leftList.Sort();
             rightList.Sort();
@@ -25,7 +23,7 @@ namespace AdventOfCode2024
 
         public async Task<long> Two()
         {
-            var data = await Common.ReadFile("One", "Two");
+            var data = await Common.ReadFile(_fileDayName, "Two");
             var (leftList, rightList) = GetLists(data);
             int similarity = 0;
             foreach (var leftValue in leftList)
