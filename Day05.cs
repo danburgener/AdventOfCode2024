@@ -1,8 +1,10 @@
 ﻿namespace AdventOfCode2024
 {
-    public static class Day05
+    public class Day05 : IDay
     {
-        public static async Task<long> One()
+        public string GetName() => "Day 05";
+
+        public async Task<long> One()
         {
             var data = await Common.ReadFile("Five", "One");
             ParseData(data, out Dictionary<int, List<int>> pageOrderingRules, out List<List<int>> pagesToProduce);
@@ -17,7 +19,7 @@
             return count;
         }
 
-        public static async Task<long> Two()
+        public async Task<long> Two()
         {
             var data = await Common.ReadFile("Five", "Two");
             ParseData(data, out Dictionary<int, List<int>> pageOrderingRules, out List<List<int>> pagesToProduce);

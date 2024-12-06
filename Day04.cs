@@ -1,10 +1,11 @@
 ﻿namespace AdventOfCode2024
 {
-    public static class Day04
+    public class Day04 : IDay
     {
+        public string GetName() => "Day 04";
         private static readonly string MAS = "MAS";
         private static readonly string XMAS = "XMAS";
-        public static async Task<long> One()
+        public async Task<long> One()
         {
             var data = await Common.ReadFile("Four", "One");
             int count = 0;
@@ -49,7 +50,7 @@
             return count;
         }
 
-        public static async Task<long> Two()
+        public async Task<long> Two()
         {
             var data = await Common.ReadFile("Four", "Two");
             int count = 0;

@@ -3,9 +3,10 @@ using System.Text.RegularExpressions;
 
 namespace AdventOfCode2024
 {
-    public static class Day03
+    public class Day03 : IDay
     {
-        public static async Task<long> One()
+        public string GetName() => "Day 03";
+        public async Task<long> One()
         {
             var data = await Common.ReadFile("Three", "One");
             string pattern = @"mul\((\d{1,3}),(\d{1,3})\)";
@@ -20,7 +21,7 @@ namespace AdventOfCode2024
             return total;
         }
 
-        public static async Task<long> Two()
+        public async Task<long> Two()
         {
             var data = await Common.ReadFile("Three", "Two");
             string pattern = @"(?:mul\((\d{1,3}),(\d{1,3})\))|(?:do\(\))|(?:don\'t\(\))";

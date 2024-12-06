@@ -1,9 +1,14 @@
 ﻿
 namespace AdventOfCode2024
 {
-    public static class Day01
+    public class Day01 : IDay
     {
-        public static async Task<long> One()
+        public string GetName()
+        {
+            return "Day 01";
+        }
+
+        public async Task<long> One()
         {
             var data = await Common.ReadFile("One", "One");
             var (leftList, rightList) = GetLists(data);
@@ -18,7 +23,7 @@ namespace AdventOfCode2024
             return currentDistance;
         }
 
-        public static async Task<long> Two()
+        public async Task<long> Two()
         {
             var data = await Common.ReadFile("One", "Two");
             var (leftList, rightList) = GetLists(data);
