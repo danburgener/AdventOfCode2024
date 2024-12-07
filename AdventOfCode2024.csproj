@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Combinatorics" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Files\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
