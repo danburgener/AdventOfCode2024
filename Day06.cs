@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+﻿using System.Text;
 
 namespace AdventOfCode2024
 {
@@ -11,9 +11,7 @@ namespace AdventOfCode2024
         private const char Left = '<';
         private const char Right = '>';
         private const char Obstruction = '#';
-        private const char CurrentNewObstruction = 'O';
-        private const char PastNewObstruction = 'X';
-        private const char Visited = '|';
+        private const char EmptySpace = '.';
         private const int DirUp = 0;
         private const int DirDown = 1;
         private const int DirLeft = 2;
@@ -65,19 +63,37 @@ namespace AdventOfCode2024
             };
         }
 
+        private static string Replace(string originalString, int index, char character)
+        {
+            StringBuilder stringBuilder = new(originalString);
+            stringBuilder = stringBuilder.Remove(index, 1);
+            stringBuilder = stringBuilder.Insert(index, character);
+            return stringBuilder.ToString();
+        }
+
         public async Task<long> Two()
         {
-            //Check current location and direction
-            //If place item directly in front of the guard, what happens?
-            //Does it eventually get into a loop?
-            //Check for loop if guard returns to a previous location going same direction
             var data = await Common.ReadFile(_fileDayName, "Two");
-            Dictionary<string, List<char>> locationTypes = new Dictionary<string, List<char>>();
-            List<string> locationsTraveled = new List<string>();
-            var (currentCol, currentRow, currentDir) = GetStartingInfo(data);
-            locationTypes.Add($"{currentRow}-{currentCol}", new List<char> { GetDirChar(currentDir) });
+            //int loops = GetLoops(data);
+            int loops = GetLoopsBruteForce(data);
+            return loops;
+        }
+
+        private int GetLoops(string[] data)
+        {
+            var (startingCol, startingRow, currentDir) = GetStartingInfo(data);
+            int currentCol = startingCol;
+            int currentRow = startingRow;
+            List<string> loops = new();
+
             while (true)
             {
+                var dataToTest = data.ToArray();
+                var loopInfo = GetLoopKey(currentRow, currentCol, currentDir, dataToTest, startingRow, startingCol);
+                if (!string.IsNullOrEmpty(loopInfo))
+                {
+                    loops.Add(loopInfo);
+                }
                 var newInfo = currentDir switch
                 {
                     DirUp => MoveUp(currentRow, currentCol, data),
@@ -94,14 +110,198 @@ namespace AdventOfCode2024
                 {
                     currentRow = newInfo.newRow;
                     currentCol = newInfo.newCol;
-                    locationsTraveled.Add($"{currentCol}-{currentRow}");
                 }
                 else
                 {
                     currentDir = newInfo.newDirection;
                 }
             }
-            return locationsTraveled.Distinct().Count();
+            return loops.Distinct().Count();
+        }
+
+        private int GetLoopsBruteForce(string[] data)
+        {
+            var (startingCol, startingRow, startingDir) = GetStartingInfo(data);
+            int loops = 0;
+            for(int row = 0; row < data.Length; row++)
+            {
+                for(int col = 0; col < data[0].Length; col++)
+                {
+                    if (data[row][col] == EmptySpace)
+                    {
+                        var newData = data.ToArray();
+                        newData[row] = Replace(newData[row], col, Obstruction);
+                        if(IsLoop(startingRow, startingCol, startingDir, newData))
+                        {
+                            loops++;
+                        }
+                    }
+                }
+            }
+            return loops;
+        }
+
+        private bool IsLoop(int currentRow, int currentCol, int currentDir, string[] data)
+        {
+            Dictionary<string, List<char>> locationTypes = new Dictionary<string, List<char>>();
+            locationTypes.Add(GetKey(currentRow, currentCol), new List<char> { GetDirChar(currentDir) });
+
+            while (true)
+            {
+                var newInfo = currentDir switch
+                {
+                    DirUp => MoveUp(currentRow, currentCol, data),
+                    DirDown => MoveDown(currentRow, currentCol, data),
+                    DirLeft => MoveLeft(currentRow, currentCol, data),
+                    DirRight => MoveRight(currentRow, currentCol, data),
+                    _ => throw new NotImplementedException()
+                };
+                if (newInfo.newDirection == -1)
+                {
+                    return false;
+                }
+                else
+                {
+                    var newInfoKey = GetKey(newInfo.newRow, newInfo.newCol);
+                    char newDirectionChar = GetDirChar(newInfo.newDirection);
+
+                    if (!locationTypes.ContainsKey(newInfoKey))
+                    {
+                        locationTypes.Add(newInfoKey, new List<char>());
+                    }
+
+                    if (locationTypes[newInfoKey].Contains(newDirectionChar))
+                    {
+                        return true;
+                    }
+
+                    locationTypes[newInfoKey].Add(newDirectionChar);
+
+                    if (newInfo.newRow != currentRow || newInfo.newCol != currentCol)
+                    {
+                        currentRow = newInfo.newRow;
+                        currentCol = newInfo.newCol;
+                    }
+                    else
+                    {
+                        currentDir = newInfo.newDirection;
+                    }
+                }
+            }
+        }
+
+        private string GetLoopKey(int currentRow, int currentCol, int currentDir, string[] data, int startingRow, int startingCol)
+        {
+            string obstructionLocation = string.Empty;
+            #region Setup New Obstruction, return if not possible
+            if (currentDir == DirDown)
+            {
+                if (currentRow == data.Length - 1 ||
+                    (currentRow + 1 == startingRow && currentCol == startingCol) ||
+                    data[currentRow + 1][currentCol] == Obstruction)
+                {
+                    return string.Empty;
+                }
+                else
+                {
+                    obstructionLocation = GetKey(currentRow + 1, currentCol);
+                    data[currentRow + 1] = Replace(data[currentRow + 1], currentCol, Obstruction);
+                }
+            }
+            else if (currentDir == DirUp)
+            {
+                if (currentRow == 0 ||
+                    (currentRow - 1 == startingRow && currentCol == startingCol) ||
+                    data[currentRow - 1][currentCol] == Obstruction)
+                {
+                    return string.Empty;
+                }
+                else
+                {
+                    obstructionLocation = GetKey(currentRow - 1, currentCol);
+                    data[currentRow - 1] = Replace(data[currentRow - 1], currentCol, Obstruction);
+                }
+            }
+            else if (currentDir == DirLeft)
+            {
+                if (currentCol == 0 ||
+                    (currentRow == startingRow && currentCol - 1 == startingCol) ||
+                     data[currentRow][currentCol - 1] == Obstruction)
+                {
+                    return string.Empty;
+                }
+                else
+                {
+                    obstructionLocation = GetKey(currentRow, currentCol - 1);
+                    data[currentRow] = Replace(data[currentRow], currentCol - 1, Obstruction);
+                }
+            }
+            else if (currentDir == DirRight)
+            {
+                if (currentCol == data[0].Length - 1 ||
+                    (currentRow == startingRow && currentCol + 1 == startingCol) ||
+                      data[currentRow][currentCol + 1] == Obstruction)
+                {
+                    return string.Empty;
+                }
+                else
+                {
+                    obstructionLocation = GetKey(currentRow, currentCol + 1);
+                    data[currentRow] = Replace(data[currentRow], currentCol + 1, Obstruction);
+                }
+            }
+            #endregion
+
+            Dictionary<string, List<char>> locationTypes = new Dictionary<string, List<char>>();
+            locationTypes.Add(GetKey(currentRow, currentCol), new List<char> { GetDirChar(currentDir) });
+
+            while (true)
+            {
+                var newInfo = currentDir switch
+                {
+                    DirUp => MoveUp(currentRow, currentCol, data),
+                    DirDown => MoveDown(currentRow, currentCol, data),
+                    DirLeft => MoveLeft(currentRow, currentCol, data),
+                    DirRight => MoveRight(currentRow, currentCol, data),
+                    _ => throw new NotImplementedException()
+                };
+                if (newInfo.newDirection == -1)
+                {
+                    return string.Empty;
+                }
+                else
+                {
+                    var newInfoKey = GetKey(newInfo.newRow, newInfo.newCol);
+                    char newDirectionChar = GetDirChar(newInfo.newDirection);
+
+                    if (!locationTypes.ContainsKey(newInfoKey))
+                    {
+                        locationTypes.Add(newInfoKey, new List<char>());
+                    }
+
+                    if (locationTypes[newInfoKey].Contains(newDirectionChar))
+                    {
+                        return obstructionLocation;
+                    }
+
+                    locationTypes[newInfoKey].Add(newDirectionChar);
+
+                    if (newInfo.newRow != currentRow || newInfo.newCol != currentCol)
+                    {
+                        currentRow = newInfo.newRow;
+                        currentCol = newInfo.newCol;
+                    }
+                    else
+                    {
+                        currentDir = newInfo.newDirection;
+                    }
+                }
+            }
+        }
+
+        private static string GetKey(int row, int col)
+        {
+            return $"{row}-{col}";
         }
 
         private static (int currentCol, int currentRow, int currentDir) GetStartingInfo(string[] data)
@@ -160,16 +360,16 @@ namespace AdventOfCode2024
             {
                 return (-1, -1, -1);
             }
-            if (data[currentRow-1][currentCol] == Obstruction)
+            if (data[currentRow - 1][currentCol] == Obstruction)
             {
                 return (currentRow, currentCol, DirRight);
             }
-            return (currentRow-1, currentCol, DirUp);
+            return (currentRow - 1, currentCol, DirUp);
         }
 
         private (int newRow, int newCol, int newDirection) MoveDown(int currentRow, int currentCol, string[] data)
         {
-            if (currentRow == data.Length-1)
+            if (currentRow == data.Length - 1)
             {
                 return (-1, -1, -1);
             }
@@ -186,11 +386,11 @@ namespace AdventOfCode2024
             {
                 return (-1, -1, -1);
             }
-            if (data[currentRow][currentCol-1] == Obstruction)
+            if (data[currentRow][currentCol - 1] == Obstruction)
             {
                 return (currentRow, currentCol, DirUp);
             }
-            return (currentRow, currentCol-1, DirLeft);
+            return (currentRow, currentCol - 1, DirLeft);
         }
 
         private (int newRow, int newCol, int newDirection) MoveRight(int currentRow, int currentCol, string[] data)
@@ -199,11 +399,11 @@ namespace AdventOfCode2024
             {
                 return (-1, -1, -1);
             }
-            if (data[currentRow][currentCol+1] == Obstruction)
+            if (data[currentRow][currentCol + 1] == Obstruction)
             {
                 return (currentRow, currentCol, DirDown);
             }
-            return (currentRow, currentCol+1, DirDown);
+            return (currentRow, currentCol + 1, DirRight);
         }
     }
 }
