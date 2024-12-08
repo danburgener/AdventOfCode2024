@@ -63,14 +63,6 @@ namespace AdventOfCode2024
             };
         }
 
-        private static string Replace(string originalString, int index, char character)
-        {
-            StringBuilder stringBuilder = new(originalString);
-            stringBuilder = stringBuilder.Remove(index, 1);
-            stringBuilder = stringBuilder.Insert(index, character);
-            return stringBuilder.ToString();
-        }
-
         public async Task<long> Two()
         {
             var data = await Common.ReadFile(_fileDayName, "Two");
@@ -130,7 +122,7 @@ namespace AdventOfCode2024
                     if (data[row][col] == EmptySpace)
                     {
                         var newData = data.ToArray();
-                        newData[row] = Replace(newData[row], col, Obstruction);
+                        newData[row] = newData[row].Replace(col, Obstruction);
                         if(IsLoop(startingRow, startingCol, startingDir, newData))
                         {
                             loops++;
@@ -205,7 +197,7 @@ namespace AdventOfCode2024
                 else
                 {
                     obstructionLocation = GetKey(currentRow + 1, currentCol);
-                    data[currentRow + 1] = Replace(data[currentRow + 1], currentCol, Obstruction);
+                    data[currentRow + 1] = data[currentRow + 1].Replace(currentCol, Obstruction);
                 }
             }
             else if (currentDir == DirUp)
@@ -219,7 +211,7 @@ namespace AdventOfCode2024
                 else
                 {
                     obstructionLocation = GetKey(currentRow - 1, currentCol);
-                    data[currentRow - 1] = Replace(data[currentRow - 1], currentCol, Obstruction);
+                    data[currentRow - 1] = data[currentRow - 1].Replace(currentCol, Obstruction);
                 }
             }
             else if (currentDir == DirLeft)
@@ -233,7 +225,7 @@ namespace AdventOfCode2024
                 else
                 {
                     obstructionLocation = GetKey(currentRow, currentCol - 1);
-                    data[currentRow] = Replace(data[currentRow], currentCol - 1, Obstruction);
+                    data[currentRow] = data[currentRow].Replace(currentCol - 1, Obstruction);
                 }
             }
             else if (currentDir == DirRight)
@@ -247,7 +239,7 @@ namespace AdventOfCode2024
                 else
                 {
                     obstructionLocation = GetKey(currentRow, currentCol + 1);
-                    data[currentRow] = Replace(data[currentRow], currentCol + 1, Obstruction);
+                    data[currentRow] = data[currentRow].Replace(currentCol + 1, Obstruction);
                 }
             }
             #endregion
