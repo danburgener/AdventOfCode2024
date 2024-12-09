@@ -1,6 +1,6 @@
 ﻿using AdventOfCode2024;
 
-IDay dayToRun = new Day08();
+IDay dayToRun = new Day09();
 
 Console.WriteLine(dayToRun.GetName());
 Console.WriteLine($"One: {await dayToRun.One()}");
