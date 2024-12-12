@@ -1,4 +1,5 @@
 ﻿
+
 namespace AdventOfCode2024
 {
     public class Day11 : IDay
@@ -13,6 +14,13 @@ namespace AdventOfCode2024
             return ProcessStones(25, initialStones);
         }
 
+        public async Task<long> Two()
+        {
+            var data = await Common.ReadFile(_fileDayName, "Two");
+            var initialStones = data[0].Split(' ').ToList();
+            return ProcessStonesUsingMap(75, initialStones);
+        }
+
         private long ProcessStones(int blinkCount, List<string> stones)
         {
             for (int blinks = 0; blinks < blinkCount; blinks++)
@@ -21,77 +29,7 @@ namespace AdventOfCode2024
             }
             return stones.Count;
         }
-
-        private long ProcessStonesChunked(List<string> stones)
-        {
-            List<List<string>> runningChunks = new List<List<string>>();
-            List<List<string>> allChunks = new List<List<string>>();
-            Console.WriteLine("Step 10");
-            runningChunks = ProcessStonesChunked(10, stones);
-            Console.WriteLine("Step 20");
-            foreach (var chunk in runningChunks)
-            {
-                allChunks.AddRange(ProcessStonesChunked(10, chunk));
-            }
-            runningChunks = allChunks.Select(a => a.ToList()).ToList();
-            allChunks = new List<List<string>>();
-            Console.WriteLine("Step 30");
-            foreach (var chunk in runningChunks)
-            {
-                allChunks.AddRange(ProcessStonesChunked(10, chunk));
-            }
-            runningChunks = allChunks.Select(a => a.ToList()).ToList();
-            allChunks = new List<List<string>>();
-            Console.WriteLine("Step 40");
-            foreach (var chunk in runningChunks)
-            {
-                allChunks.AddRange(ProcessStonesChunked(10, chunk));
-            }
-            runningChunks = allChunks.Select(a => a.ToList()).ToList();
-            allChunks = new List<List<string>>();
-            Console.WriteLine("Step 50");
-            foreach (var chunk in runningChunks)
-            {
-                allChunks.AddRange(ProcessStonesChunked(10, chunk));
-            }
-            runningChunks = allChunks.Select(a => a.ToList()).ToList();
-            allChunks = new List<List<string>>();
-            Console.WriteLine("Step 60");
-            foreach (var chunk in runningChunks)
-            {
-                allChunks.AddRange(ProcessStonesChunked(10, chunk));
-            }
-            runningChunks = allChunks.Select(a => a.ToList()).ToList();
-            allChunks = new List<List<string>>();
-            Console.WriteLine("Step 70");
-            foreach (var chunk in runningChunks)
-            {
-                allChunks.AddRange(ProcessStonesChunked(10, chunk));
-            }
-            runningChunks = allChunks.Select(a => a.ToList()).ToList();
-            allChunks = new List<List<string>>();
-            Console.WriteLine("Step 75");
-            foreach (var chunk in runningChunks)
-            {
-                allChunks.AddRange(ProcessStonesChunked(5, chunk));
-            }
-            return allChunks.Select(a => a.Count()).Sum();
-        }
-
-        private List<List<string>> ProcessStonesChunked(int blinkCount, List<string> stones)
-        {
-            int chunkSize = 500;
-            List<List<string>> chunks = stones.Chunk(chunkSize).Select(c => c.ToList()).ToList();
-            for (int blinks = 0; blinks < blinkCount; blinks++)
-            {
-                for (var i = 0; i < chunks.Count; i++)
-                {
-                    chunks[i] = ProcessStones(chunks[i]);
-                }
-            }
-            return chunks;
-        }
-
+        
         private List<string> ProcessStones(List<string> stones)
         {
             List<string> newStones = [];
@@ -118,18 +56,59 @@ namespace AdventOfCode2024
             return newStones;
         }
 
-        public async Task<long> Two()
+        private long ProcessStonesUsingMap(int blinkCount, List<string> stones)
         {
-            var data = await Common.ReadFile(_fileDayName, "Two");
-            var initialStones = data[0].Split(' ').ToList();
-            long count = 0;
-            List<Task<long>> tasks = new List<Task<long>>();
-            foreach(var stone in initialStones)
+            Dictionary<string, long> stonesMap = new Dictionary<string, long>();
+            foreach(var stone in stones)
             {
-                tasks.Add(Task.Run(() => ProcessStonesChunked(new List<string> { stone })));
+                if (stonesMap.ContainsKey(stone))
+                {
+                    stonesMap[stone] += 1;
+                }
+                else
+                {
+                    stonesMap.Add(stone, 1);
+                }
             }
-            var results = await Task.WhenAll(tasks);
-            return results.Sum();
+
+            for (int blinks = 0; blinks < blinkCount; blinks++)
+            {
+                Dictionary<string, long> newMap = new Dictionary<string, long>();
+                foreach(var key in stonesMap.Keys)
+                {
+                    long count = stonesMap[key];
+                    if (key == "0")
+                    {
+                        AddToMap(newMap, "1", count);
+                    }
+                    else
+                    {
+                        if (key.Length % 2 == 0)
+                        {
+                            AddToMap(newMap, (long.Parse(key[..(key.Length / 2)]).ToString()), count);
+                            AddToMap(newMap, (long.Parse(key[(key.Length / 2)..]).ToString()), count);
+                        }
+                        else
+                        {
+                            AddToMap(newMap, (long.Parse(key) * 2024).ToString(), count);
+                        }
+                    }
+                }
+                stonesMap = newMap.ToDictionary(entry => entry.Key, entry => entry.Value);
+            }
+            return stonesMap.Select(s => s.Value).Sum();
+        }
+
+        private void AddToMap(Dictionary<string, long> map, string key, long count)
+        {
+            if (map.ContainsKey(key))
+            {
+                map[key] += count;
+            }
+            else
+            {
+                map.Add(key, count);
+            }
         }
     }
 }
