@@ -99,7 +99,7 @@
         {
             var regex = new System.Text.RegularExpressions.Regex(@"Button\s[AB]\:\sX\+(\d+),\sY\+(\d+)");
             var match = regex.Match(buttonLine);
-            return new DoubleVector2(float.Parse(match.Groups[1].Value), float.Parse(match.Groups[2].Value));
+            return new DoubleVector2(double.Parse(match.Groups[1].Value), double.Parse(match.Groups[2].Value));
         }
 
         public class Game
