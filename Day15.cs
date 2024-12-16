@@ -21,16 +21,16 @@ namespace AdventOfCode2024
                 switch (command)
                 {
                     case '^':
-                        (currentRow, currentColumn) = MoveUp(map, currentRow, currentColumn, Robot);
+                        (currentRow, currentColumn) = MoveUp(map, currentRow, currentColumn);
                         break;
                     case '>':
-                        (currentRow, currentColumn) = MoveRight(map, currentRow, currentColumn, Robot);
+                        (currentRow, currentColumn) = MoveRight(map, currentRow, currentColumn);
                         break;
                     case 'v':
-                        (currentRow, currentColumn) = MoveDown(map, currentRow, currentColumn, Robot);
+                        (currentRow, currentColumn) = MoveDown(map, currentRow, currentColumn);
                         break;
                     case '<':
-                        (currentRow, currentColumn) = MoveLeft(map, currentRow, currentColumn, Robot);
+                        (currentRow, currentColumn) = MoveLeft(map, currentRow, currentColumn);
                         break;
                     default:
                         break;
@@ -53,108 +53,179 @@ namespace AdventOfCode2024
             return (-1, -1);
         }
 
-        private (int currentRow, int currentColumn) MoveLeft(List<List<char>> map, int currentRow, int currentColumn, char character)
+        private (int currentRow, int currentColumn) MoveLeft(List<List<char>> map, int currentRow, int currentColumn)
         {
             if (map[currentRow][currentColumn - 1] == Empty)
             {
-                map[currentRow][currentColumn - 1] = character;
+                map[currentRow][currentColumn - 1] = Robot;
                 map[currentRow][currentColumn] = Empty;
-                if (character == Robot)
+                return (currentRow, currentColumn - 1);
+            }
+            else if (map[currentRow][currentColumn - 1] == Box)
+            {
+                bool canMove = true;
+                int lastColumn = currentColumn - 1;
+                for (; lastColumn > 0; lastColumn--)
                 {
+                    var character = map[currentRow][lastColumn - 1];
+                    if (character == Box)
+                    {
+                        continue;
+                    }
+                    else if (character == Empty)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        canMove = false;
+                        break;
+                    }
+                }
+                if (canMove)
+                {
+                    for (; lastColumn < currentColumn; lastColumn++)
+                    {
+                        map[currentRow][lastColumn - 1] = Box;
+                        map[currentRow][lastColumn] = Empty;
+                    }
+                    map[currentRow][currentColumn - 1] = Robot;
+                    map[currentRow][currentColumn] = Empty;
                     return (currentRow, currentColumn - 1);
                 }
             }
-            //else if (map[currentRow][currentColumn - 1] == Box)
-            //{
-            //    (int newRow, int newColumn) = MoveLeft(map, currentRow, currentColumn - 1, Box);
-            //    if (newColumn != currentColumn - 1)
-            //    {
-            //        map[currentRow][currentColumn] = map[currentRow][currentColumn - 1];
-            //        map[currentRow][currentColumn - 1] = character;
-            //        if (character == Robot)
-            //        {
-            //            return (currentRow, currentColumn - 1);
-            //        }
-            //    }
-            //}
             return (currentRow, currentColumn);
         }
 
-        private (int currentRow, int currentColumn) MoveDown(List<List<char>> map, int currentRow, int currentColumn, char character)
-        {
-            if (map[currentRow + 1][currentColumn] == Empty)
-            {
-                map[currentRow + 1][currentColumn] = character;
-                map[currentRow][currentColumn] = Empty;
-                if (character == Robot)
-                {
-                    return (currentRow + 1, currentColumn);
-                }
-            }
-            //else if (map[currentRow + 1][currentColumn] == Box)
-            //{
-            //    (int newRow, int newColumn) = MoveDown(map, currentRow + 1, currentColumn, Box);
-            //    if (newRow != newRow + 1)
-            //    {
-            //        map[currentRow][currentColumn] = map[currentRow + 1][currentColumn];
-            //        map[currentRow + 1][currentColumn] = character;
-            //        if (character == Robot)
-            //        {
-            //            return (currentRow + 1, currentColumn);
-            //        }
-            //    }
-            //}
-            return (currentRow, currentColumn);
-        }
-
-        private (int currentRow, int currentColumn) MoveRight(List<List<char>> map, int currentRow, int currentColumn, char character)
+        private (int currentRow, int currentColumn) MoveRight(List<List<char>> map, int currentRow, int currentColumn)
         {
             if (map[currentRow][currentColumn + 1] == Empty)
             {
-                map[currentRow][currentColumn + 1] = character;
+                map[currentRow][currentColumn + 1] = Robot;
                 map[currentRow][currentColumn] = Empty;
-                if (character == Robot)
+                return (currentRow, currentColumn + 1);
+            }
+            else if (map[currentRow][currentColumn + 1] == Box)
+            {
+                bool canMove = true;
+                int lastColumn = currentColumn + 1;
+                for (; lastColumn < map[0].Count; lastColumn++)
                 {
+                    var character = map[currentRow][lastColumn + 1];
+                    if (character == Box)
+                    {
+                        continue;
+                    }
+                    else if (character == Empty)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        canMove = false;
+                        break;
+                    }
+                }
+                if (canMove)
+                {
+                    for (; lastColumn > currentColumn; lastColumn--)
+                    {
+                        map[currentRow][lastColumn + 1] = Box;
+                        map[currentRow][lastColumn] = Empty;
+                    }
+                    map[currentRow][currentColumn + 1] = Robot;
+                    map[currentRow][currentColumn] = Empty;
                     return (currentRow, currentColumn + 1);
                 }
             }
-            //else if (map[currentRow][currentColumn + 1] == Box)
-            //{
-            //    (int newRow, int newColumn) = MoveRight(map, currentRow, currentColumn + 1, Box);
-            //    if (newColumn != currentColumn + 1)
-            //    {
-            //        map[currentRow][currentColumn] = map[currentRow][currentColumn + 1];
-            //        map[currentRow][currentColumn + 1] = character;
-            //            return (currentRow, currentColumn + 1);
-            //    }
-            //}
             return (currentRow, currentColumn);
         }
 
-        private (int currentRow, int currentColumn) MoveUp(List<List<char>> map, int currentRow, int currentColumn, char character)
+        private (int currentRow, int currentColumn) MoveUp(List<List<char>> map, int currentRow, int currentColumn)
         {
             if (map[currentRow - 1][currentColumn] == Empty)
             {
-                map[currentRow - 1][currentColumn] = character;
+                map[currentRow - 1][currentColumn] = Robot;
                 map[currentRow][currentColumn] = Empty;
-                if (character == Robot)
+                return (currentRow - 1, currentColumn);
+            }
+            else if (map[currentRow - 1][currentColumn] == Box)
+            {
+                bool canMove = true;
+                int lastRow = currentRow - 1;
+                for (; lastRow > 0; lastRow--)
                 {
+                    var character = map[lastRow - 1][currentColumn];
+                    if (character == Box)
+                    {
+                        continue;
+                    }
+                    else if (character == Empty)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        canMove = false;
+                        break;
+                    }
+                }
+                if (canMove)
+                {
+                    for (; lastRow < currentRow; lastRow++)
+                    {
+                        map[lastRow - 1][currentColumn] = Box;
+                        map[lastRow][currentColumn] = Empty;
+                    }
+                    map[currentRow - 1][currentColumn] = Robot;
+                    map[currentRow][currentColumn] = Empty;
                     return (currentRow - 1, currentColumn);
                 }
             }
-            //else if (map[currentRow - 1][currentColumn] == Box)
-            //{
-            //    (int newRow, int newColumn) = MoveUp(map, currentRow - 1, currentColumn, Box);
-            //    if (newRow != newRow - 1)
-            //    {
-            //        map[currentRow][currentColumn] = map[currentRow - 1][currentColumn];
-            //        map[currentRow - 1][currentColumn] = character;
-            //        if (character == Robot)
-            //        {
-            //            return (currentRow - 1, currentColumn);
-            //        }
-            //    }
-            //}
+            return (currentRow, currentColumn);
+        }
+
+        private (int currentRow, int currentColumn) MoveDown(List<List<char>> map, int currentRow, int currentColumn)
+        {
+            if (map[currentRow + 1][currentColumn] == Empty)
+            {
+                map[currentRow + 1][currentColumn] = Robot;
+                map[currentRow][currentColumn] = Empty;
+                return (currentRow + 1, currentColumn);
+            }
+            else if (map[currentRow + 1][currentColumn] == Box)
+            {
+                bool canMove = true;
+                int lastRow = currentRow + 1;
+                for (; lastRow < map.Count; lastRow++)
+                {
+                    var character = map[lastRow + 1][currentColumn];
+                    if (character == Box)
+                    {
+                        continue;
+                    }
+                    else if (character == Empty)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        canMove = false;
+                        break;
+                    }
+                }
+                if (canMove)
+                {
+                    for (; lastRow > currentRow; lastRow--)
+                    {
+                        map[lastRow + 1][currentColumn] = Box;
+                        map[lastRow][currentColumn] = Empty;
+                    }
+                    map[currentRow + 1][currentColumn] = Robot;
+                    map[currentRow][currentColumn] = Empty;
+                    return (currentRow + 1, currentColumn);
+                }
+            }
             return (currentRow, currentColumn);
         }
 
