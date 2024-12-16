@@ -39,8 +39,27 @@ namespace AdventOfCode2024
         public async Task<long> Two()
         {
             var data = await Common.ReadFile(_fileDayName, "Two");
-            int count = 0;
-            return count;
+            List<Node> nodes = new List<Node>();
+            for (var row = 0; row < data.Length; row++)
+            {
+                for (var column = 0; column < data[0].Length; column++)
+                {
+                    nodes.Add(new Node(data[row][column], row, column));
+                }
+            }
+            SetNeighbors(nodes);
+            var startingNode = nodes.First(n => n.Character == Start);
+            startingNode.Direction = Direction.East;
+            var endNode = nodes.First(n => n.Character == End);
+            long shortestPathCost = PerformDijkstras(startingNode, endNode);
+
+            startingNode.Direction = Direction.East;
+            return GetTileCountOfAllPathsEqualToShortest(shortestPathCost, startingNode, endNode);
+        }
+
+        private long GetTileCountOfAllPathsEqualToShortest(long shortestPathCost, Node startingNode, Node endNode)
+        {
+            return 0;
         }
 
         private long PerformDijkstras(Node startingNode, Node endNode)
