@@ -32,6 +32,7 @@ namespace AdventOfCode2024
                 }
                 if (HasStraightLine(robots, tilesTall, 10))
                 {
+                    PrintRobots(robots, tilesWide, tilesTall);
                     return secondsElapsed;
                 }
             }
@@ -68,7 +69,7 @@ namespace AdventOfCode2024
                 {
                     MoveRobot(robot, tilesWide, tilesTall);
                 }
-                //PrintRobots(robots, tilesWide, tilesTall);
+                
             }
 
             return GetSafetyFactor(robots, tilesWide, tilesTall);
