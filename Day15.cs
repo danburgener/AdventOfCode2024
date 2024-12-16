@@ -37,6 +37,17 @@ namespace AdventOfCode2024
                 };
             }
             int count = 0;
+
+            for (var row = 0; row < map.Count; row++)
+            {
+                for(var column = 0; column < map[0].Count; column++)
+                {
+                    if (map[row][column] == Box)
+                    {
+                        count += (row * 100) + column;
+                    }
+                }
+            }
             return count;
         }
 
