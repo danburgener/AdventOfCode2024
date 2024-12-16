@@ -1,4 +1,5 @@
-﻿namespace AdventOfCode2024
+﻿
+namespace AdventOfCode2024
 {
     public class Day14 : IDay
     {
@@ -21,8 +22,42 @@
             List<Robot> robots = GenerateRobots(data);
             int tilesWide = 101;
             int tilesTall = 103;
-            int secondsToElapse = 100;
-            return GetSafetyFactor(robots, tilesWide, tilesTall, secondsToElapse);
+            int secondsElapsed = 0;
+            while(true && secondsElapsed < int.MaxValue)
+            {
+                secondsElapsed++;
+                foreach (var robot in robots)
+                {
+                    MoveRobot(robot, tilesWide, tilesTall);
+                }
+                if (HasStraightLine(robots, tilesTall, 10))
+                {
+                    return secondsElapsed;
+                }
+            }
+            return 0;
+        }
+
+        private static bool HasStraightLine(List<Robot> robots, int tilesTall, int minLineCount)
+        {
+            for(int row = 0; row < tilesTall; row++)
+            {
+                var robotsOnRow = robots.Where(r => r.PositionY == row).OrderBy(r => r.PositionX);
+                if (robotsOnRow.Count() >= minLineCount)
+                {
+                    bool inStraightLine = true;
+                    for(var i = 0; i < robotsOnRow.Count()-1; i++)
+                    {
+                        if (robotsOnRow.ElementAt(i).PositionX != robotsOnRow.ElementAt(i + 1).PositionX - 1)
+                        {
+                            inStraightLine = false;
+                            break;
+                        }
+                    }
+                    return inStraightLine;
+                }
+            }
+            return false;
         }
 
         private long GetSafetyFactor(List<Robot> robots, int tilesWide, int tilesTall, int secondsToElapse)
@@ -33,7 +68,7 @@
                 {
                     MoveRobot(robot, tilesWide, tilesTall);
                 }
-                PrintRobots(robots, tilesWide, tilesTall);
+                //PrintRobots(robots, tilesWide, tilesTall);
             }
 
             return GetSafetyFactor(robots, tilesWide, tilesTall);
