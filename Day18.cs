@@ -27,7 +27,7 @@ namespace AdventOfCode2024
             for(var i = 0; i < cycles; i++)
             {
                 var node = map.First(m => m.Row == incomingBytes[i].Key && m.Column == incomingBytes[i].Value);
-                node.Character = Corrupted;
+                map.Remove(node);
             }
             SetNeighbors(map);
             Node startingNode = map.First(m => m.Row == 0 && m.Column == 0);
@@ -39,8 +39,26 @@ namespace AdventOfCode2024
         public async Task<long> Two()
         {
             var data = await Common.ReadFile(_fileDayName, "Two");
-            int count = 0;
-            return count;
+            List<KeyValuePair<int, int>> incomingBytes = new List<KeyValuePair<int, int>>();
+            foreach (var line in data)
+            {
+                var lineData = line.Split(',').Select(s => int.Parse(s)).ToList();
+                incomingBytes.Add(new KeyValuePair<int, int>(lineData[0], lineData[1]));
+            }
+            int mapLength = 71;
+            int mapHeight = 71;
+            int cycles = 2958; //Manually ran to figure this number out. Maybe write a function that would do this for me.
+            List<Node> map = GenerateMap(mapLength, mapHeight);
+            for (var i = 0; i < cycles; i++)
+            {
+                var node = map.First(m => m.Row == incomingBytes[i].Key && m.Column == incomingBytes[i].Value);
+                map.Remove(node);
+            }
+            SetNeighbors(map);
+            Node startingNode = map.First(m => m.Row == 0 && m.Column == 0);
+            Node endNode = map.First(m => m.Row == mapHeight - 1 && m.Column == mapLength - 1);
+            PerformDijkstras(startingNode, endNode);
+            return endNode.DistanceFromStart;
         }
 
         private static List<Node> GenerateMap(int length, int height)
