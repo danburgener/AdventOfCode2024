@@ -1,4 +1,5 @@
 ﻿
+
 namespace AdventOfCode2024
 {
     public class Day21 : IDay
@@ -20,9 +21,10 @@ namespace AdventOfCode2024
             foreach (var line in data)
             {
                 var numbericValue = int.Parse(line.Substring(0, line.Length-1));
-                List<char> commandsForNumbericKeypad = GetCommands(line.ToList(), numbericKeypadRobotMap);
-                List<char> commandsForDirectionalRobot1 = GetCommands(commandsForNumbericKeypad, directionalRobot1Map);
-                List<char> commandsForDirectionalRobot2 = GetCommands(commandsForDirectionalRobot1, directionalRobot2Map);
+                List<char> commandsForNumbericKeypad = GetCommandsBFS(line.ToList(), numbericKeypadRobotMap);
+                //List<char> commandsForNumbericKeypad = GetCommands(line.ToList(), numbericKeypadRobotMap);
+                List<char> commandsForDirectionalRobot1 = GetCommandsBFS(commandsForNumbericKeypad, directionalRobot1Map);
+                List<char> commandsForDirectionalRobot2 = GetCommandsBFS(commandsForDirectionalRobot1, directionalRobot2Map);
                 totalValue += numbericValue * commandsForDirectionalRobot2.Count();
             }
 
@@ -41,7 +43,6 @@ namespace AdventOfCode2024
                 {
                     Node startingNode = map.First(n => n.Character == currentLocation);
                     Node endNode = map.First(n => n.Character == item);
-
                     PerformDijkstras(startingNode, endNode);
                     Node previous = endNode.Previous;
                     Node currentNode = endNode;
@@ -61,36 +62,55 @@ namespace AdventOfCode2024
             return commands;
         }
 
-        private List<char> GetCommandsForDirectionalRobot1(List<char> line, List<Node> directionalRobot1Map)
+        private List<char> GetCommandsBFS(List<char> line, List<Node> map)
         {
             char currentLocation = A;
             var itemsToSelect = line;
-            List<char> commandsForDirectionalKeypad = new List<char>();
+            List<char> commands = new List<char>();
             foreach (var item in itemsToSelect)
             {
                 List<char> directions = new List<char>();
                 if (currentLocation != item)
                 {
-                    Node startingNode = directionalRobot1Map.First(n => n.Character == currentLocation);
-                    Node endNode = directionalRobot1Map.First(n => n.Character == item);
-
-                    PerformDijkstras(startingNode, endNode);
-                    Node previous = endNode.Previous;
-                    Node currentNode = endNode;
-                    do
+                    Node startingNode = map.First(n => n.Character == currentLocation);
+                    Node endNode = map.First(n => n.Character == item);
+                    var paths = BFS(startingNode, endNode);
+                    List<Node> straightestPath = new();
+                    if (paths.Count == 1)
                     {
-                        directions.Insert(0, GetDirection(previous, currentNode));
-                        previous = previous.Previous;
-                        currentNode = currentNode.Previous;
-                    } while (previous != null);
+                        straightestPath = paths[0];
+                    }
+                    else
+                    {
+                        int leastAmountOfChanges = int.MaxValue;
+                        foreach (var path in paths)
+                        {
+                            int changeCount = 0;
+                            for (var i = 0; i < path.Count - 1; i++)
+                            {
+                                if (path[i].Character != path[i + 1].Character)
+                                {
+                                    changeCount++;
+                                }
+                            }
+                            if (leastAmountOfChanges > changeCount)
+                            {
+                                straightestPath = path;
+                            }
+                        }
+                    }
+                    
+                    for(var i = 1; i < straightestPath.Count; i++)
+                    {
+                        directions.Insert(0, GetDirection(straightestPath[i-1], straightestPath[i]));
+                    }
                 }
                 directions.Add(A);
-                commandsForDirectionalKeypad.AddRange(directions);
+                commands.AddRange(directions);
                 currentLocation = item;
-                RestartMap(directionalRobot1Map);
             }
 
-            return commandsForDirectionalKeypad;
+            return commands;
         }
 
         private void RestartMap(List<Node> numbericKeypadRobotMap)
@@ -167,19 +187,6 @@ namespace AdventOfCode2024
             return map;
         }
 
-        private static List<Node> GenerateMap(string[] data)
-        {
-            List<Node> map = new();
-            for (var row = 0; row < data.Length; row++)
-            {
-                for (var column = 0; column < data[0].Length; column++)
-                {
-                    map.Add(new Node(data[row][column], row, column));
-                }
-            }
-            return map;
-        }
-
         private static void SetNeighbors(List<Node> nodes)
         {
             foreach (var node in nodes)
@@ -221,7 +228,7 @@ namespace AdventOfCode2024
 
                 foreach (var neighbor in currentNode.Neighors)
                 {
-                    if (visited.Contains(neighbor))
+                    if (visited.Contains(neighbor) || neighbor.Character == 32)
                     {
                         continue;
                     }
@@ -230,7 +237,7 @@ namespace AdventOfCode2024
                         unvisited.Add(neighbor);
                     }
                     long newDistance = currentNode.DistanceFromStart + 1;
-                    if (neighbor.DistanceFromStart > newDistance)
+                    if (neighbor.DistanceFromStart >= newDistance)
                     {
                         neighbor.DistanceFromStart = newDistance;
                         neighbor.Previous = currentNode;
@@ -242,6 +249,46 @@ namespace AdventOfCode2024
 
             return endNode.DistanceFromStart;
 
+        }
+
+        private List<List<Node>> BFS(Node startingNode, Node endNode)
+        {
+            Queue<List<Node>> queue = new();
+
+            List<Node> path = [startingNode];
+            queue.Enqueue(path);
+            List<Node> visited = [];
+
+            List<List<Node>> completePaths = new();
+            int shortestPath = int.MaxValue;
+
+            while (queue.Count != 0)
+            {
+                path = queue.Dequeue();
+                if (path.Count > shortestPath)
+                {
+                    continue;
+                }
+                Node last = path.Last();
+                if (last == endNode)
+                {
+                    shortestPath = path.Count;
+                    completePaths.Add(path);
+                }
+
+                foreach(var neighbor in last.Neighors)
+                {
+                    if (!path.Contains(neighbor))
+                    {
+                        List<Node> newPath = new List<Node>(path)
+                        {
+                            neighbor
+                        };
+                        queue.Enqueue(newPath);
+                    }
+                }
+            }
+            return completePaths;
         }
 
         public class Node
